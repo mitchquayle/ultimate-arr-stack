@@ -38,6 +38,46 @@ docker compose -f docker-compose.arr-stack.yml up -d  # Restarts containers with
 
 When upgrading across versions, check below for any action required.
 
+### v1.7.2 → v1.7.3
+
+Fixes `.lan` DNS resolution inside VPN-tunneled containers and adds a script to fix duplicate Jellyfin entries after enabling TRaSH naming.
+
+#### 1. Pull and redeploy
+
+```bash
+cd /volume1/docker/arr-stack
+git pull origin main
+docker compose -f docker-compose.arr-stack.yml up -d --force-recreate
+```
+
+#### 2. Fix .lan DNS for VPN-tunneled services
+
+If you use `.lan` domains (local DNS setup), add the IPv6 wildcard to prevent DNS failures inside Gluetun:
+
+```bash
+# Check if already present
+grep 'address=/lan/::' pihole/02-local-dns.conf || echo 'address=/lan/::' >> pihole/02-local-dns.conf
+docker restart pihole
+```
+
+Without this, webhooks and notifications from Sonarr/Radarr to `.lan` hostnames (e.g., `homeassistant.lan`) silently fail. This is the standard dnsmasq approach for IPv4-only local domains — it returns a proper AAAA response (the `::` unspecified address) instead of NXDOMAIN. Alpine/musl-based containers like Gluetun treat AAAA NXDOMAIN as a hard failure, even when the A (IPv4) record resolves fine.
+
+#### 3. Fix duplicate Jellyfin entries (if applicable)
+
+If you enabled TRaSH naming in v1.7 and have duplicate show entries in Jellyfin:
+
+```bash
+# Preview what will be renamed (dry run)
+./scripts/fix-sonarr-folders.sh
+
+# Apply
+./scripts/fix-sonarr-folders.sh --apply
+```
+
+Then trigger a Jellyfin library scan (Dashboard → Libraries → Scan All Libraries).
+
+---
+
 ### v1.7.1 → v1.7.2
 
 Container rename: `jellyseerr` → `seerr` (completes the Seerr rebrand from v1.6.4). App configuration docs restructured into three files — existing `APP-CONFIG.md` anchor links still work.
@@ -189,11 +229,21 @@ Follow the naming configuration steps in the [App Configuration Guide](APP-CONFI
 - [Sonarr naming](APP-CONFIG.md#44-sonarr-tv-shows) (step 5)
 - [Radarr naming](APP-CONFIG.md#45-radarr-movies) (step 5)
 
-After configuring naming, rename existing files:
-- Radarr: Movies → Select All → Organize
-- Sonarr: Series → Select All → Organize
+After configuring naming, rename existing files and folders:
 
-> **Important: Verify paths after organizing.** The TRaSH naming scheme renames directories on disk (e.g., `Avatar The Way of Water` → `Avatar - The Way of Water`). In rare cases, Radarr's database may not update to match, causing movies to show as "missing" on the Health page.
+1. **Rename series folders** (Sonarr only — the TRaSH series folder format adds `[tvdbid-XXXXX]` which existing folders won't have):
+   ```bash
+   ./scripts/fix-sonarr-folders.sh
+   ```
+   This uses Sonarr's API to rename every series folder to match the configured format. Sonarr moves the folder on disk and updates its database atomically — no manual file moves, no rescan needed. Safe to run multiple times.
+
+2. **Rename episode/movie files:**
+   - Radarr: Movies → Select All → Organize
+   - Sonarr: Series → Select All → Organize
+
+> **Warning: Do not rename series folders manually** (e.g., with `mv` on the NAS). Sonarr's database won't know about the change, causing it to lose track of your files. Always use the script above or Sonarr's UI — both keep the database in sync.
+
+> **Radarr path mismatches:** The TRaSH naming scheme may rename movie directories (e.g., `Avatar The Way of Water` → `Avatar - The Way of Water`). In rare cases, Radarr's database may not update to match, causing movies to show as "missing" on the Health page.
 >
 > **Check:** Go to Radarr → System → Health. If you see "missing root folder" or many movies suddenly show as unmonitored/missing, run the path fixer:
 > ```bash

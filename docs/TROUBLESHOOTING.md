@@ -211,3 +211,4 @@ ssh -vv user@your-nas.local 'exit' 2>&1 | grep 'kex: algorithm'
 ```
 
 **UGOS resilience:** The `sshd_config.d/` drop-in directory is less likely to be wiped than the main config (same principle as using `@reboot` crontab instead of `/etc/rc.local`). If a UGOS update does remove it, you'll just see the warning again — nothing breaks. The client-side config on your Mac is completely UGOS-proof.
+

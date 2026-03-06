@@ -33,3 +33,10 @@ address=/pihole.lan/TRAEFIK_LAN_IP
 address=/uptime.lan/TRAEFIK_LAN_IP
 address=/duc.lan/TRAEFIK_LAN_IP
 address=/beszel.lan/TRAEFIK_LAN_IP
+
+# Proper IPv6 response for .lan domains (no real IPv6 addresses needed).
+# Returns :: (unspecified) instead of NXDOMAIN for AAAA queries. This is the
+# standard dnsmasq approach for IPv4-only local domains. Required because
+# Alpine/musl-based containers (e.g. Gluetun) treat AAAA NXDOMAIN as a hard
+# failure — even when the A (IPv4) record resolves fine.
+address=/lan/::
