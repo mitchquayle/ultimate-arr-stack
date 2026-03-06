@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.3] - 2026-03-06
+
+### Added
+- **`fix-sonarr-folders.sh` script**: Safely renames Sonarr series folders via the API, preserving database integrity. Prevents the episode-loss scenario caused by manual folder renames on disk
+- **Pi-hole AAAA DNS fix**: `address=/lan/::` entry in dnsmasq config returns `::` for AAAA queries on `.lan` domains instead of NXDOMAIN. Fixes DNS failures in Alpine/musl containers (e.g., Gluetun) that treat AAAA NXDOMAIN as a hard failure
+
+### Fixed
+- **Seerr library sync and quality defaults**: Documented that Jellyfin libraries must be enabled in Seerr settings and synced, otherwise movies/shows stay stuck at "Requested". Default quality profiles set to `UHD Bluray + WEB` (Radarr) and `Ultra-HD` (Sonarr)
+- **qBittorrent auth subnet whitelist**: Documented local network whitelist (`172.20.0.0/24, 10.10.0.0/24, 127.0.0.0/8`) to prevent IP bans from Sonarr/Radarr reconnections and API scripts after container restarts
+
+### Documentation
+- **UPGRADING.md**: v1.7.3 migration steps for Seerr library sync, quality profile defaults, and qBit auth whitelist
+- **APP-CONFIG docs**: Seerr quality profiles and library sync steps added to both script-assisted and manual guides
+- **APP-CONFIG-ADVANCED.md**: qBittorrent auth bypass section with subnet whitelist instructions
+- **SETUP.md**: Clarified script-assisted vs manual setup trade-offs, security review note for configure-apps.sh
+
+---
+
 ## [1.7.2] - 2026-03-01
 
 ### Changed
