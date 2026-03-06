@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [1.7.3] - 2026-03-06
 
 ### Added
-- **`fix-sonarr-folders.sh` script**: Safely renames Sonarr series folders via the API, preserving database integrity. Renaming folders directly on disk breaks Sonarr's tracking — use this script instead
+- **`fix-sonarr-folders.sh` script**: Renames Sonarr series folders via the API so that Sonarr's database stays in sync (renaming folders directly on disk breaks tracking). LLM-generated and human-reviewed — check the script before running
 - **Pi-hole AAAA DNS fix**: `address=/lan/::` entry in dnsmasq config returns `::` for AAAA queries on `.lan` domains instead of NXDOMAIN. Fixes DNS failures in Alpine/musl containers (e.g., Gluetun) that treat AAAA NXDOMAIN as a hard failure
 
 ### Fixed

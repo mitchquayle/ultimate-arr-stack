@@ -67,12 +67,14 @@ Without this, webhooks and notifications from Sonarr/Radarr to `.lan` hostnames 
 If you enabled TRaSH naming in v1.7 and have duplicate show entries in Jellyfin:
 
 ```bash
-# Preview what will be renamed (dry run)
+# Preview what will be renamed (dry run — review output carefully)
 ./scripts/fix-sonarr-folders.sh
 
-# Apply
+# Apply only after reviewing the dry run
 ./scripts/fix-sonarr-folders.sh --apply
 ```
+
+> **Note:** This script is LLM-generated and human-reviewed. Review [fix-sonarr-folders.sh](../scripts/fix-sonarr-folders.sh) before running — you are responsible for verifying it against your setup.
 
 Then trigger a Jellyfin library scan (Dashboard → Libraries → Scan All Libraries).
 
@@ -252,7 +254,7 @@ After configuring naming, rename existing files and folders:
    ```bash
    ./scripts/fix-sonarr-folders.sh
    ```
-   This uses Sonarr's API to rename every series folder to match the configured format. Sonarr moves the folder on disk and updates its database atomically — no manual file moves, no rescan needed. Safe to run multiple times.
+   This uses Sonarr's API to rename every series folder to match the configured format. Dry run by default — review the output before passing `--apply`. LLM-generated and human-reviewed; check the script before running.
 
 2. **Rename episode/movie files:**
    - Radarr: Movies → Select All → Organize
